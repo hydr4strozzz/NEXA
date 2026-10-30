@@ -1,7 +1,6 @@
 package com.nexa.app
 
 import android.app.Application
-import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import androidx.compose.runtime.mutableStateListOf
@@ -20,7 +19,6 @@ data class Message(
 class ChatViewModel(app: Application) : AndroidViewModel(app) {
     val messages = mutableStateListOf<Message>()
     private val api = ApiClient()
-    private val prefs = app.getSharedPreferences("nexa", Context.MODE_PRIVATE)
     private val main = Handler(Looper.getMainLooper())
 
     private val bundledGroq: String
@@ -36,22 +34,20 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
         bundledGroq = g; bundledDeepseek = d
     }
 
-    private fun groqKey() = prefs.getString("groqKey", "").let { if (it.isNullOrBlank()) bundledGroq else it }
-    private fun deepseekKey() = prefs.getString("deepseekKey", "").let { if (it.isNullOrBlank()) bundledDeepseek else it }
+    private fun groqKey() = bundledGroq
+    private fun deepseekKey() = bundledDeepseek
 
     private fun providerMap() = Providers.build(groqKey(), deepseekKey())
 
     private fun keyAvailable(name: String): Boolean = when (name) {
         "groq" -> groqKey().isNotBlank()
         "deepseek" -> deepseekKey().isNotBlank()
-        "openrouter" -> !prefs.getString("orKey", "").isNullOrBlank()
         else -> false
     }
 
     private fun keyFor(name: String): String = when (name) {
         "groq" -> groqKey()
         "deepseek" -> deepseekKey()
-        "openrouter" -> prefs.getString("orKey", "").orEmpty()
         else -> ""
     }
 
@@ -62,7 +58,7 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
             val prompt = ImageGen.extractPrompt(text)
             val url = ImageGen.pollinations(prompt)
             messages.add(Message("user", text))
-            messages.add(Message("assistant", "generating: $prompt", imageUrl = url, provider = "pollinations"))
+            messages.add(Message("assistant", "Generating image: $prompt", imageUrl = url, provider = "ImageGen"))
             return
         }
 
@@ -73,16 +69,15 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
             append(text)
         }.trim().ifBlank { text }
 
-        val forced = prefs.getString("forceProvider", "auto") ?: "auto"
         messages.add(Message("user", text.ifBlank { "[file]" }, imageB64))
         messages.add(Message("assistant", "", pending = true))
         val idx = messages.lastIndex
 
-        val chain = if (imageB64 != null) Providers.visionChain(forced, ::keyAvailable)
-                    else Providers.chain(forced, ::keyAvailable)
+        val chain = if (imageB64 != null) Providers.visionChain(::keyAvailable)
+                    else Providers.chain(::keyAvailable)
 
         if (chain.isEmpty()) {
-            messages[idx] = messages[idx].copy(content = "[no provider key - open settings]", pending = false)
+            messages[idx] = messages[idx].copy(content = "Error: API keys are not configured in this build.", pending = false)
             return
         }
 
@@ -139,6 +134,4 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
             }
         )
     }
-
-    fun prefs(): android.content.SharedPreferences = prefs
 }

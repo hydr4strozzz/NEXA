@@ -20,25 +20,14 @@ object Providers {
             baseUrl = "https://api.deepseek.com/v1",
             model = "deepseek-chat",
             visionModel = null
-        ),
-        "openrouter" to Provider(
-            name = "openrouter",
-            baseUrl = "https://openrouter.ai/api/v1",
-            model = "cognitivecomputations/dolphin-mixtral-8x22b",
-            visionModel = "meta-llama/llama-3.2-90b-vision-instruct"
         )
     )
 
-    fun chain(forced: String, keyAvailable: (String) -> Boolean): List<String> {
-        val base = listOf("groq", "deepseek", "openrouter")
-        val start = if (forced != "auto" && forced in base) listOf(forced) + base.filter { it != forced }
-                    else base
-        return start.filter { keyAvailable(it) }
+    fun chain(keyAvailable: (String) -> Boolean): List<String> {
+        return listOf("groq", "deepseek").filter { keyAvailable(it) }
     }
 
-    fun visionChain(forced: String, keyAvailable: (String) -> Boolean): List<String> {
-        val order = if (forced == "auto" || forced == "deepseek") listOf("groq", "openrouter")
-                    else listOf(forced) + listOf("groq", "openrouter").filter { it != forced }
-        return order.filter { keyAvailable(it) }
+    fun visionChain(keyAvailable: (String) -> Boolean): List<String> {
+        return listOf("groq").filter { keyAvailable(it) }
     }
 }

@@ -11,8 +11,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -22,13 +21,32 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+
+// Professional Dark Theme Colors
+val BgColor = Color(0xFF0F0F11)
+val SurfaceColor = Color(0xFF1C1C1E)
+val UserBubbleColor = Color(0xFF6D28D9) // Deep Purple
+val AiBubbleColor = Color(0xFF2C2C2E)   // Dark Gray
+val TextPrimary = Color(0xFFF3F4F6)
+val TextSecondary = Color(0xFF9CA3AF)
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent { MaterialTheme { NexaApp() } }
+        setContent {
+            MaterialTheme(
+                colorScheme = darkColorScheme(
+                    background = BgColor,
+                    surface = SurfaceColor,
+                    primary = UserBubbleColor,
+                    onBackground = TextPrimary,
+                    onSurface = TextPrimary
+                )
+            ) { NexaApp() }
+        }
     }
 }
 
@@ -37,7 +55,6 @@ class MainActivity : ComponentActivity() {
 fun NexaApp(vm: ChatViewModel = viewModel()) {
     val ctx = LocalContext.current
     var input by remember { mutableStateOf("") }
-    var showSettings by remember { mutableStateOf(false) }
     var pendingImage by remember { mutableStateOf<String?>(null) }
     var pendingFileText by remember { mutableStateOf<String?>(null) }
     var imageMode by remember { mutableStateOf(false) }
@@ -71,132 +88,135 @@ fun NexaApp(vm: ChatViewModel = viewModel()) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("NEXA", fontWeight = FontWeight.Bold) },
-                actions = { TextButton(onClick = { showSettings = !showSettings }) {
-                    Text(if (showSettings) "close" else "settings")
-                } }
+                title = {
+                    Column {
+                        Text("NEXA", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = TextPrimary)
+                        Text("Unrestricted AI", fontSize = 12.sp, color = TextSecondary)
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = SurfaceColor)
             )
         },
+        containerColor = BgColor,
         bottomBar = {
-            Column(Modifier.padding(8.dp)) {
+            Column(Modifier.background(SurfaceColor).padding(8.dp)) {
                 if (pendingImage != null || pendingFileText != null || imageMode) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        if (pendingImage != null) Text("image attached", color = Color.DarkGray)
-                        if (pendingFileText != null) Text("file attached", color = Color.DarkGray)
-                        if (imageMode) Text("image-gen on", color = Color.DarkGray)
+                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)) {
+                        if (pendingImage != null) Text("Image attached", color = TextSecondary, fontSize = 12.sp)
+                        if (pendingFileText != null) Text("File attached", color = TextSecondary, fontSize = 12.sp)
+                        if (imageMode) Text("Image Gen Active", color = Color(0xFF10B981), fontSize = 12.sp)
                         Spacer(Modifier.weight(1f))
-                        TextButton(onClick = { pendingImage = null; pendingFileText = null; imageMode = false }) { Text("clear") }
+                        TextButton(onClick = { pendingImage = null; pendingFileText = null; imageMode = false }) {
+                            Text("Clear", color = Color(0xFFEF4444), fontSize = 12.sp)
+                        }
                     }
                 }
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    OutlinedButton(onClick = { filePicker.launch("*/*") }) { Text("file") }
-                    Spacer(Modifier.width(4.dp))
-                    OutlinedButton(onClick = { imgPicker.launch("image/*") }) { Text("img") }
-                    Spacer(Modifier.width(4.dp))
-                    OutlinedButton(onClick = { imageMode = !imageMode }) { Text("gen") }
-                    Spacer(Modifier.width(6.dp))
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                    IconButton(onClick = { filePicker.launch("*/*") }) {
+                        Text("FILE", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TextSecondary)
+                    }
+                    IconButton(onClick = { imgPicker.launch("image/*") }) {
+                        Text("IMG", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TextSecondary)
+                    }
+                    IconButton(onClick = { imageMode = !imageMode }) {
+                        Text("GEN", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = if(imageMode) Color(0xFF10B981) else TextSecondary)
+                    }
+                    
                     OutlinedTextField(
                         value = input,
                         onValueChange = { input = it },
-                        modifier = Modifier.weight(1f),
-                        placeholder = { Text(if (imageMode) "describe the image" else "ask anything") },
-                        maxLines = 4
+                        modifier = Modifier.weight(1f).padding(horizontal = 4.dp),
+                        placeholder = { Text(if (imageMode) "Describe the image..." else "Message NEXA...", color = TextSecondary) },
+                        maxLines = 4,
+                        shape = RoundedCornerShape(24.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedContainerColor = BgColor,
+                            unfocusedContainerColor = BgColor,
+                            focusedBorderColor = UserBubbleColor,
+                            unfocusedBorderColor = Color.Transparent,
+                            focusedTextColor = TextPrimary,
+                            unfocusedTextColor = TextPrimary
+                        )
                     )
-                    Spacer(Modifier.width(6.dp))
-                    Button(onClick = {
-                        val t = input.trim()
-                        if (imageMode && t.isNotBlank()) {
-                            vm.send("/img $t", null, null)
-                        } else if (t.isNotEmpty() || pendingImage != null || pendingFileText != null) {
-                            vm.send(t, pendingImage, pendingFileText)
-                        } else return@Button
-                        input = ""; pendingImage = null; pendingFileText = null; imageMode = false
-                    }) { Text("send") }
+                    
+                    IconButton(
+                        onClick = {
+                            val t = input.trim()
+                            if (imageMode && t.isNotBlank()) {
+                                vm.send("/img $t", null, null)
+                            } else if (t.isNotEmpty() || pendingImage != null || pendingFileText != null) {
+                                vm.send(t, pendingImage, pendingFileText)
+                            } else return@IconButton
+                            input = ""; pendingImage = null; pendingFileText = null; imageMode = false
+                        },
+                        modifier = Modifier.background(UserBubbleColor, RoundedCornerShape(50)).size(48.dp)
+                    ) {
+                        Text(">", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                    }
                 }
             }
         }
     ) { pad ->
-        Column(Modifier.padding(pad).fillMaxSize()) {
-            if (showSettings) SettingsPanel(vm)
-            LazyColumn(
-                state = listState,
-                modifier = Modifier.fillMaxSize().padding(8.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp)
-            ) { items(vm.messages.size) { i -> Bubble(vm.messages[i]) } }
-        }
+        LazyColumn(
+            state = listState,
+            modifier = Modifier.padding(pad).fillMaxSize().padding(horizontal = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            contentPadding = PaddingValues(top = 12.dp, bottom = 12.dp)
+        ) { items(vm.messages.size) { i -> Bubble(vm.messages[i]) } }
     }
 }
 
 @Composable
 fun Bubble(m: Message) {
     val isUser = m.role == "user"
-    Column(Modifier.fillMaxWidth(), horizontalAlignment = if (isUser) Alignment.End else Alignment.Start) {
+    Column(
+        Modifier.fillMaxWidth(),
+        horizontalAlignment = if (isUser) Alignment.End else Alignment.Start
+    ) {
         Box(
             Modifier
-                .widthIn(max = 340.dp)
+                .widthIn(max = 320.dp)
                 .background(
-                    if (isUser) Color(0xFF1E1E1E) else Color(0xFFEFEFEF),
-                    MaterialTheme.shapes.medium
+                    if (isUser) UserBubbleColor else AiBubbleColor,
+                    RoundedCornerShape(
+                        topStart = 16.dp,
+                        topEnd = 16.dp,
+                        bottomStart = if (isUser) 16.dp else 4.dp,
+                        bottomEnd = if (isUser) 4.dp else 16.dp
+                    )
                 )
-                .padding(10.dp)
+                .padding(12.dp)
         ) {
             Column {
                 if (m.content.isNotBlank()) {
                     Text(
-                        text = if (m.pending && m.content.isEmpty()) "..." else m.content,
-                        color = if (isUser) Color.White else Color.Black
+                        text = if (m.pending && m.content.isEmpty()) "Thinking..." else m.content,
+                        color = TextPrimary,
+                        fontSize = 15.sp,
+                        lineHeight = 22.sp
                     )
                 } else if (m.pending) {
-                    Text("...")
+                    Text("Thinking...", color = TextSecondary, fontSize = 15.sp)
                 }
+                
                 m.imageUrl?.let { url ->
-                    Spacer(Modifier.height(6.dp))
+                    Spacer(Modifier.height(8.dp))
                     AsyncImage(
                         model = url,
                         contentDescription = "generated",
-                        modifier = Modifier.fillMaxWidth().heightIn(max = 320.dp),
+                        modifier = Modifier.fillMaxWidth().heightIn(max = 300.dp).background(Color.Black, RoundedCornerShape(8.dp)),
                         contentScale = ContentScale.Fit
                     )
                 }
             }
         }
-        if (m.imageB64 != null) Text("image", color = Color.Gray, style = MaterialTheme.typography.labelSmall)
-        m.provider?.let { Text("via $it", color = Color.Gray, style = MaterialTheme.typography.labelSmall) }
-    }
-}
-
-@Composable
-fun SettingsPanel(vm: ChatViewModel) {
-    val prefs = vm.prefs()
-    var groqKey by remember { mutableStateOf(prefs.getString("groqKey", "").orEmpty()) }
-    var deepseekKey by remember { mutableStateOf(prefs.getString("deepseekKey", "").orEmpty()) }
-    var orKey by remember { mutableStateOf(prefs.getString("orKey", "").orEmpty()) }
-    var forceProvider by remember { mutableStateOf(prefs.getString("forceProvider", "auto") ?: "auto") }
-
-    Column(
-        Modifier.fillMaxWidth().heightIn(max = 340.dp)
-            .verticalScroll(rememberScrollState())
-            .padding(12.dp),
-        verticalArrangement = Arrangement.spacedBy(6.dp)
-    ) {
-        Text("fallback: ${if (forceProvider == "auto") "groq -> deepseek -> openrouter" else "$forceProvider first, then chain"}", style = MaterialTheme.typography.labelMedium)
-        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            listOf("auto", "groq", "deepseek", "openrouter").forEach { p ->
-                OutlinedButton(onClick = { forceProvider = p }) {
-                    Text(p, style = MaterialTheme.typography.labelSmall)
-                }
-            }
+        if (!isUser && m.provider != null) {
+            Text(
+                text = m.provider ?: "",
+                color = TextSecondary,
+                fontSize = 10.sp,
+                modifier = Modifier.padding(top = 4.dp, start = 4.dp)
+            )
         }
-        OutlinedTextField(groqKey, { groqKey = it }, label = { Text("groq key (blank = bundled)") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
-        OutlinedTextField(deepseekKey, { deepseekKey = it }, label = { Text("deepseek key") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
-        OutlinedTextField(orKey, { orKey = it }, label = { Text("openrouter key") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
-        Button(onClick = {
-            prefs.edit()
-                .putString("groqKey", groqKey.trim())
-                .putString("deepseekKey", deepseekKey.trim())
-                .putString("orKey", orKey.trim())
-                .putString("forceProvider", forceProvider)
-                .apply()
-        }) { Text("save") }
     }
 }
