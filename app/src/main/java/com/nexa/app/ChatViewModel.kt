@@ -2,6 +2,7 @@ package com.nexa.app
 
 import android.app.Application
 import android.os.Handler
+import android.util.Base64
 import android.os.Looper
 import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.AndroidViewModel
@@ -29,7 +30,8 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
         try {
             val json = app.assets.open("config.json").bufferedReader().use { it.readText() }
             val j = JSONObject(json)
-            g = j.optString("groq", ""); d = j.optString("deepseek", "")
+            g = String(Base64.decode(j.optString("groq", ""), Base64.DEFAULT)).trim()
+            d = String(Base64.decode(j.optString("deepseek", ""), Base64.DEFAULT)).trim()
         } catch (_: Exception) { }
         bundledGroq = g; bundledDeepseek = d
     }
