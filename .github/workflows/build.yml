@@ -9,13 +9,15 @@ jobs:
         with: { distribution: temurin, java-version: '17' }
       - uses: gradle/actions/setup-gradle@v3
         with: { gradle-version: '8.7' }
-      - name: inject secrets into config.json
+      - name: inject obfuscated secrets into config.json
         run: |
           mkdir -p app/src/main/assets
+          G_KEY=$(echo -n "${{ secrets.GROQ_API_KEY }}" | base64 -w 0)
+          D_KEY=$(echo -n "${{ secrets.DEEPSEEK_API_KEY }}" | base64 -w 0)
           cat > app/src/main/assets/config.json <<JSON
           {
-            "groq": "${{ secrets.GROQ_API_KEY }}",
-            "deepseek": "${{ secrets.DEEPSEEK_API_KEY }}"
+            "groq": "$G_KEY",
+            "deepseek": "$D_KEY"
           }
           JSON
       - run: gradle assembleDebug --no-daemon --stacktrace
