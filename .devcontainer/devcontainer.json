@@ -1,0 +1,6 @@
+{
+  "name": "nexa-build",
+  "image": "ghcr.io/cirruslabs/android-sdk:34",
+  "postCreateCommand": "sdkmanager --licenses > /dev/null 2>&1 || true",
+  "customizations": { "vscode": { "extensions": ["vscjava.vscode-java-pack", "fwcd.kotlin"] } }
+}
