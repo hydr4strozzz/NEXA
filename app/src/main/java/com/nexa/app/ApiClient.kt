@@ -12,7 +12,7 @@ data class WireMessage(val role: String, val text: String, val imageB64: String?
 
 class ApiClient {
     private val client = OkHttpClient.Builder()
-        .connectTimeout(15, TimeUnit.SECONDS)
+        .connectTimeout(5, TimeUnit.SECONDS) // Fast fail: 5s instead of 15s
         .readTimeout(0, TimeUnit.SECONDS)
         .build()
 
@@ -60,7 +60,6 @@ class ApiClient {
             try {
                 val resp = client.newCall(req).execute()
                 if (!resp.isSuccessful) {
-                    // Show exact error body
                     val errBody = resp.body?.string()?.take(150)?.replace("\n", " ") ?: "No body"
                     onError("HTTP ${resp.code}: $errBody")
                     return@Thread
