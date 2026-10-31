@@ -79,7 +79,7 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
                     else Providers.chain(::keyAvailable)
 
         if (chain.isEmpty()) {
-            messages[idx] = messages[idx].copy(content = "Error: API keys are not configured in this build.", pending = false)
+            messages[idx] = messages[idx].copy(content = "Error: No API keys found.", pending = false)
             return
         }
 
@@ -93,11 +93,11 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
         tryChain(chain, 0, history, idx)
     }
 
-    private fun tryChain(chain: List<String>, pos: Int, history: List<WireMessage>, idx: Int) {
+    private fun tryChain(chain: List<String>, pos: Int, history: List<WireMessage>, idx: Int, lastErr: String = "") {
         if (pos >= chain.size) {
             main.post {
                 val cur = messages[idx]
-                if (cur.content.isBlank()) messages[idx] = cur.copy(content = "[all providers failed]", pending = false)
+                if (cur.content.isBlank()) messages[idx] = cur.copy(content = "[Failed] $lastErr", pending = false)
                 else messages[idx] = cur.copy(pending = false)
             }
             return
@@ -126,10 +126,10 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
                 }
             },
             onDone = { main.post { messages[idx] = messages[idx].copy(pending = false) } },
-            onError = {
+            onError = { err ->
                 if (!gotToken) {
                     main.post { messages[idx] = messages[idx].copy(content = "", provider = null) }
-                    tryChain(chain, pos + 1, history, idx)
+                    tryChain(chain, pos + 1, history, idx, err)
                 } else {
                     main.post { messages[idx] = messages[idx].copy(pending = false) }
                 }

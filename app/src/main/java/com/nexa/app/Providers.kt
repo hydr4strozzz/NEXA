@@ -13,7 +13,7 @@ object Providers {
             name = "groq",
             baseUrl = "https://api.groq.com/openai/v1",
             model = "llama-3.3-70b-versatile",
-            visionModel = "meta-llama/llama-4-scout-17b-16e-instruct"
+            visionModel = "llama-3.2-90b-vision-preview" // fixed
         ),
         "deepseek" to Provider(
             name = "deepseek",

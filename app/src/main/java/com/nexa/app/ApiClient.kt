@@ -1,4 +1,3 @@
-// language: Kotlin, file: ApiClient.kt, target: Android / OpenAI-compatible
 package com.nexa.app
 
 import okhttp3.MediaType.Companion.toMediaType
@@ -33,14 +32,8 @@ class ApiClient {
             val obj = JSONObject().put("role", m.role)
             if (m.imageB64 != null) {
                 val parts = JSONArray()
-                if (m.text.isNotBlank())
-                    parts.put(JSONObject().put("type", "text").put("text", m.text))
-                parts.put(
-                    JSONObject().put("type", "image_url").put(
-                        "image_url",
-                        JSONObject().put("url", "data:image/jpeg;base64,${m.imageB64}")
-                    )
-                )
+                if (m.text.isNotBlank()) parts.put(JSONObject().put("type", "text").put("text", m.text))
+                parts.put(JSONObject().put("type", "image_url").put("image_url", JSONObject().put("url", "data:image/jpeg;base64,${m.imageB64}")))
                 obj.put("content", parts)
             } else {
                 obj.put("content", m.text)
@@ -67,7 +60,9 @@ class ApiClient {
             try {
                 val resp = client.newCall(req).execute()
                 if (!resp.isSuccessful) {
-                    onError("HTTP ${resp.code}")
+                    // Show exact error body
+                    val errBody = resp.body?.string()?.take(150)?.replace("\n", " ") ?: "No body"
+                    onError("HTTP ${resp.code}: $errBody")
                     return@Thread
                 }
                 resp.body?.source()?.use { src ->
@@ -77,9 +72,7 @@ class ApiClient {
                         val data = line.removePrefix("data:").trim()
                         if (data == "[DONE]") break
                         try {
-                            val tok = JSONObject(data)
-                                .getJSONArray("choices").getJSONObject(0)
-                                .optJSONObject("delta")?.optString("content").orEmpty()
+                            val tok = JSONObject(data).getJSONArray("choices").getJSONObject(0).optJSONObject("delta")?.optString("content").orEmpty()
                             if (tok.isNotEmpty()) onToken(tok)
                         } catch (_: Exception) { }
                     }
