@@ -9,12 +9,7 @@ object ImageGen {
         return "https://image.pollinations.ai/prompt/$enc?width=$width&height=$height&nologo=true&seed=$seed&model=flux"
     }
 
-    private val triggers = listOf(
-        "/img ", "/image ", "/draw ", "/gen ",
-        "generate image", "create image", "make image", "draw me", "draw a ",
-        "image undak", "image create", "image generate", "oru image", "padam undak", "padam varak",
-        "image thaa", "padam thaa", "photo thaa", "image venam", "padam venam"
-    )
+    private val triggers = listOf("/img ", "/image ", "/draw ", "/gen ", "generate image", "create image")
 
     fun isImageRequest(text: String): Boolean {
         val t = text.lowercase().trim()

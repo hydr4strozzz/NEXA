@@ -22,46 +22,39 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
     private val api = ApiClient()
     private val main = Handler(Looper.getMainLooper())
 
-    private val bundledGroq: String
-    private val bundledDeepseek: String
-    private val bundledGemini: String
-    private val bundledOpenRouter: String
+    private val keyOpenRouter: String
+    private val keyDeepInfra: String
+    private val keyHuggingFace: String
+    private val keyGroq: String
 
     init {
-        var g = ""; var d = ""; var m = ""; var o = ""
+        var o = ""; var di = ""; var h = ""; var g = ""
         try {
             val json = app.assets.open("config.json").bufferedReader().use { it.readText() }
             val j = JSONObject(json)
-            g = String(Base64.decode(j.optString("groq", ""), Base64.DEFAULT)).trim()
-            d = String(Base64.decode(j.optString("deepseek", ""), Base64.DEFAULT)).trim()
-            m = String(Base64.decode(j.optString("gemini", ""), Base64.DEFAULT)).trim()
             o = String(Base64.decode(j.optString("openrouter", ""), Base64.DEFAULT)).trim()
+            di = String(Base64.decode(j.optString("deepinfra", ""), Base64.DEFAULT)).trim()
+            h = String(Base64.decode(j.optString("huggingface", ""), Base64.DEFAULT)).trim()
+            g = String(Base64.decode(j.optString("groq", ""), Base64.DEFAULT)).trim()
         } catch (_: Exception) { }
-        bundledGroq = g; bundledDeepseek = d; bundledGemini = m; bundledOpenRouter = o
+        keyOpenRouter = o; keyDeepInfra = di; keyHuggingFace = h; keyGroq = g
     }
 
-    private fun groqKey() = bundledGroq
-    private fun deepseekKey() = bundledDeepseek
-    private fun geminiKey() = bundledGemini
-    private fun openrouterKey() = bundledOpenRouter
-
-    private fun providerMap() = Providers.build(groqKey(), deepseekKey(), geminiKey(), openrouterKey())
+    private fun providerMap() = Providers.build(keyOpenRouter, keyHuggingFace, keyDeepInfra, keyGroq)
 
     private fun keyAvailable(name: String): Boolean = when (name) {
-        "groq" -> groqKey().isNotBlank()
-        "deepseek" -> deepseekKey().isNotBlank()
-        "gemini" -> geminiKey().isNotBlank()
-        "openrouter" -> openrouterKey().isNotBlank()
-        "pollinations" -> true
+        "openrouter" -> keyOpenRouter.isNotBlank()
+        "deepinfra" -> keyDeepInfra.isNotBlank()
+        "huggingface" -> keyHuggingFace.isNotBlank()
+        "groq" -> keyGroq.isNotBlank()
         else -> false
     }
 
     private fun keyFor(name: String): String = when (name) {
-        "groq" -> groqKey()
-        "deepseek" -> deepseekKey()
-        "gemini" -> geminiKey()
-        "openrouter" -> openrouterKey()
-        "pollinations" -> "none"
+        "openrouter" -> keyOpenRouter
+        "deepinfra" -> keyDeepInfra
+        "huggingface" -> keyHuggingFace
+        "groq" -> keyGroq
         else -> ""
     }
 
@@ -91,7 +84,7 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
                     else Providers.chain(::keyAvailable)
 
         if (chain.isEmpty()) {
-            messages[idx] = messages[idx].copy(content = "Error: No API keys found.", pending = false)
+            messages[idx] = messages[idx].copy(content = "Error: No API keys found in this build.", pending = false)
             return
         }
 
@@ -109,7 +102,7 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
         if (pos >= chain.size) {
             main.post {
                 val cur = messages[idx]
-                if (cur.content.isBlank()) messages[idx] = cur.copy(content = "[Failed] $lastErr", pending = false)
+                if (cur.content.isBlank()) messages[idx] = cur.copy(content = "[All providers failed. Last error: $lastErr]", pending = false)
                 else messages[idx] = cur.copy(pending = false)
             }
             return
@@ -117,7 +110,7 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
         val name = chain[pos]
         val p = providerMap()[name] ?: run { tryChain(chain, pos + 1, history, idx, lastErr); return }
         val apiKey = keyFor(name)
-        if (apiKey.isBlank() && name != "pollinations") { tryChain(chain, pos + 1, history, idx, lastErr); return }
+        if (apiKey.isBlank()) { tryChain(chain, pos + 1, history, idx, lastErr); return }
 
         val hasImage = history.lastOrNull()?.imageB64 != null
         val model = if (hasImage && p.visionModel != null) p.visionModel else p.model

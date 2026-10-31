@@ -12,8 +12,8 @@ data class WireMessage(val role: String, val text: String, val imageB64: String?
 
 class ApiClient {
     private val client = OkHttpClient.Builder()
-        .connectTimeout(5, TimeUnit.SECONDS) // 5s connect
-        .readTimeout(0, TimeUnit.SECONDS)    // 0 means wait indefinitely for the stream to start
+        .connectTimeout(5, TimeUnit.SECONDS)
+        .readTimeout(0, TimeUnit.SECONDS)
         .build()
 
     fun streamChat(
@@ -45,7 +45,7 @@ class ApiClient {
             .put("messages", messages)
             .put("stream", true)
             .put("temperature", 0.7)
-            .put("max_tokens", 2048)
+            .put("max_tokens", 4096)
 
         val req = Request.Builder()
             .url(baseUrl.trimEnd('/') + "/chat/completions")

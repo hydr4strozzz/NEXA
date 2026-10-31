@@ -9,19 +9,19 @@ jobs:
         with: { distribution: temurin, java-version: '17' }
       - uses: gradle/actions/setup-gradle@v3
         with: { gradle-version: '8.7' }
-      - name: inject obfuscated secrets into config.json
+      - name: inject obfuscated secrets
         run: |
           mkdir -p app/src/main/assets
-          G_KEY=$(echo -n "${{ secrets.GROQ_API_KEY }}" | base64 -w 0)
-          D_KEY=$(echo -n "${{ secrets.DEEPSEEK_API_KEY }}" | base64 -w 0)
-          M_KEY=$(echo -n "${{ secrets.GEMINI_API_KEY }}" | base64 -w 0)
           O_KEY=$(echo -n "${{ secrets.OPENROUTER_API_KEY }}" | base64 -w 0)
+          H_KEY=$(echo -n "${{ secrets.HUGGINGFACE_API_KEY }}" | base64 -w 0)
+          DI_KEY=$(echo -n "${{ secrets.DEEPINFRA_API_KEY }}" | base64 -w 0)
+          G_KEY=$(echo -n "${{ secrets.GROQ_API_KEY }}" | base64 -w 0)
           cat > app/src/main/assets/config.json <<JSON
           {
-            "groq": "$G_KEY",
-            "deepseek": "$D_KEY",
-            "gemini": "$M_KEY",
-            "openrouter": "$O_KEY"
+            "openrouter": "$O_KEY",
+            "huggingface": "$H_KEY",
+            "deepinfra": "$DI_KEY",
+            "groq": "$G_KEY"
           }
           JSON
       - run: gradle assembleDebug --no-daemon --stacktrace

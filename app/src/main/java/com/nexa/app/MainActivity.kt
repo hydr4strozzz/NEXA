@@ -37,7 +37,7 @@ val OrangeAccent = Color(0xFFFF7A00)
 val BgColor = Color(0xFF050505)
 val InputBg = Color(0xFF1E1E1E)
 val UserBubbleColor = Color(0xFF2C2C2E)
-val AiBubbleColor = Color(0xE61A1A1A) // Slight transparency to see flames
+val AiBubbleColor = Color(0xE61A1A1A)
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -80,30 +80,23 @@ fun NexaApp(vm: ChatViewModel = viewModel()) {
     }
 
     Box(modifier = Modifier.fillMaxSize().background(BgColor)) {
-        // Background Flame Image
         AsyncImage(
             model = "https://images.unsplash.com/photo-1507608616759-54f48f0af0ee?q=80&w=1000&auto=format&fit=crop",
-            contentDescription = "Flame Background",
+            contentDescription = "Fire Background",
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop,
-            alpha = 0.7f
+            alpha = 0.6f
         )
 
         Column(modifier = Modifier.fillMaxSize()) {
-            // Top Bar
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 24.dp),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 24.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(
-                        modifier = Modifier
-                            .size(44.dp)
-                            .background(OrangeAccent, CircleShape)
-                            .padding(8.dp),
+                        modifier = Modifier.size(44.dp).background(OrangeAccent, CircleShape).padding(8.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(Icons.Default.Person, contentDescription = "User", tint = Color.Black)
@@ -111,15 +104,9 @@ fun NexaApp(vm: ChatViewModel = viewModel()) {
                     Spacer(modifier = Modifier.width(12.dp))
                     Text("User", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Medium)
                 }
-                Icon(
-                    Icons.Default.Settings,
-                    contentDescription = "Settings",
-                    tint = Color.LightGray,
-                    modifier = Modifier.size(28.dp)
-                )
+                Icon(Icons.Default.Settings, contentDescription = "Settings", tint = Color.LightGray, modifier = Modifier.size(28.dp))
             }
 
-            // Chat Area
             LazyColumn(
                 state = listState,
                 modifier = Modifier.weight(1f).fillMaxWidth().padding(horizontal = 16.dp),
@@ -129,19 +116,12 @@ fun NexaApp(vm: ChatViewModel = viewModel()) {
                 items(vm.messages.size) { i -> Bubble(vm.messages[i]) }
             }
 
-            // Bottom Input Bar
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color(0xFF121212))
-                    .padding(horizontal = 12.dp, vertical = 12.dp),
+                modifier = Modifier.fillMaxWidth().background(Color(0xFF121212)).padding(horizontal = 12.dp, vertical = 12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(
-                    modifier = Modifier
-                        .weight(1f)
-                        .background(InputBg, RoundedCornerShape(30.dp))
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    modifier = Modifier.weight(1f).background(InputBg, RoundedCornerShape(30.dp)).padding(horizontal = 16.dp, vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     TextField(
@@ -162,28 +142,22 @@ fun NexaApp(vm: ChatViewModel = viewModel()) {
                     IconButton(onClick = { filePicker.launch("*/*") }) {
                         Icon(Icons.Default.AttachFile, contentDescription = "Attach", tint = Color.Gray)
                     }
-                    IconButton(onClick = { /* Mic logic (Optional) */ }) {
+                    IconButton(onClick = { }) {
                         Icon(Icons.Default.Mic, contentDescription = "Mic", tint = Color.Gray)
                     }
                 }
                 Spacer(modifier = Modifier.width(12.dp))
-                // Send Button
                 Box(
-                    modifier = Modifier
-                        .size(48.dp)
-                        .background(OrangeAccent, CircleShape)
-                        .clip(CircleShape),
+                    modifier = Modifier.size(48.dp).background(OrangeAccent, CircleShape).clip(CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
-                    IconButton(
-                        onClick = {
-                            val t = input.trim()
-                            if (t.isNotEmpty()) {
-                                vm.send(t, null, null)
-                                input = ""
-                            }
+                    IconButton(onClick = {
+                        val t = input.trim()
+                        if (t.isNotEmpty()) {
+                            vm.send(t, null, null)
+                            input = ""
                         }
-                    ) {
+                    }) {
                         Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Send", tint = Color.White)
                     }
                 }
@@ -200,13 +174,7 @@ fun Bubble(m: Message) {
         horizontalAlignment = if (isUser) Alignment.End else Alignment.Start
     ) {
         Box(
-            Modifier
-                .widthIn(max = 300.dp)
-                .background(
-                    if (isUser) UserBubbleColor else AiBubbleColor,
-                    RoundedCornerShape(20.dp)
-                )
-                .padding(14.dp)
+            Modifier.widthIn(max = 300.dp).background(if (isUser) UserBubbleColor else AiBubbleColor, RoundedCornerShape(20.dp)).padding(14.dp)
         ) {
             Column {
                 if (m.content.isNotBlank()) {
