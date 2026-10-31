@@ -30,11 +30,12 @@ object Providers {
         "groq" to Provider(
             name = "groq",
             baseUrl = "https://api.groq.com/openai/v1",
-            model = "llama-3.1-8b-instant", // Fast fallback
+            model = "llama-3.3-70b-versatile", 
             visionModel = "llama-3.2-90b-vision-preview"
         )
     )
 
+    // Only unrestricted providers. No Pollinations.
     fun chain(keyAvailable: (String) -> Boolean): List<String> {
         return listOf("openrouter", "deepinfra", "huggingface", "groq").filter { keyAvailable(it) }
     }
