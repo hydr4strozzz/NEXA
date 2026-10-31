@@ -18,8 +18,8 @@ object Providers {
         "gemini" to Provider(
             name = "gemini",
             baseUrl = "https://generativelanguage.googleapis.com/v1beta/openai/",
-            model = "gemini-1.5-flash",
-            visionModel = "gemini-1.5-flash"
+            model = "gemini-1.5-flash-latest",
+            visionModel = "gemini-1.5-flash-latest"
         ),
         "pollinations" to Provider(
             name = "pollinations",
@@ -35,7 +35,7 @@ object Providers {
         )
     )
 
-    // Pollinations always available, DeepSeek last (since paid)
+    // Fast, Smart, Unlimited, Paid
     fun chain(keyAvailable: (String) -> Boolean): List<String> {
         return listOf("groq", "gemini", "pollinations", "deepseek").filter { keyAvailable(it) }
     }

@@ -1,9 +1,9 @@
 package com.nexa.app
-import android.util.Base64
 
 import android.app.Application
 import android.os.Handler
 import android.os.Looper
+import android.util.Base64
 import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.AndroidViewModel
 import org.json.JSONObject
@@ -47,8 +47,7 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
     private fun keyAvailable(name: String): Boolean = when (name) {
         "groq" -> groqKey().isNotBlank()
         "deepseek" -> deepseekKey().isNotBlank()
-        "gemini" -> geminiKey()
-        "pollinations" -> "none".isNotBlank()
+        "gemini" -> geminiKey().isNotBlank()
         "pollinations" -> true
         else -> false
     }
@@ -111,9 +110,9 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
             return
         }
         val name = chain[pos]
-        val p = providerMap()[name] ?: run { tryChain(chain, pos + 1, history, idx); return }
+        val p = providerMap()[name] ?: run { tryChain(chain, pos + 1, history, idx, lastErr); return }
         val apiKey = keyFor(name)
-        if (apiKey.isBlank() && name != "pollinations") { tryChain(chain, pos + 1, history, idx); return }
+        if (apiKey.isBlank() && name != "pollinations") { tryChain(chain, pos + 1, history, idx, lastErr); return }
 
         val hasImage = history.lastOrNull()?.imageB64 != null
         val model = if (hasImage && p.visionModel != null) p.visionModel else p.model
