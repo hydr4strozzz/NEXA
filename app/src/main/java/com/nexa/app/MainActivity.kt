@@ -82,7 +82,7 @@ fun NexaApp(vm: ChatViewModel = viewModel()) {
     Box(modifier = Modifier.fillMaxSize().background(BgColor)) {
         // Background Flame Image
         AsyncImage(
-            model = "https://images.unsplash.com/photo-1541701494587-cb58502866ab?q=80&w=1000&auto=format&fit=crop",
+            model = "https://images.unsplash.com/photo-1507608616759-54f48f0af0ee?q=80&w=1000&auto=format&fit=crop",
             contentDescription = "Flame Background",
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop,

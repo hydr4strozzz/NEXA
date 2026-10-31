@@ -12,7 +12,7 @@ object Providers {
         "groq" to Provider(
             name = "groq",
             baseUrl = "https://api.groq.com/openai/v1",
-            model = "llama-3.1-8b-instant", // Blazing fast
+            model = "llama-3.1-8b-instant",
             visionModel = "llama-3.2-90b-vision-preview"
         ),
         "gemini" to Provider(
@@ -30,7 +30,7 @@ object Providers {
         "pollinations" to Provider(
             name = "pollinations",
             baseUrl = "https://text.pollinations.ai/openai",
-            model = "openai-fast",
+            model = "openai", // Changed to standard to avoid 429 fast limits
             visionModel = "openai"
         )
     )
