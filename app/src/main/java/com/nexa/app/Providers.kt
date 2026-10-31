@@ -12,8 +12,14 @@ object Providers {
         "groq" to Provider(
             name = "groq",
             baseUrl = "https://api.groq.com/openai/v1",
-            model = "llama-3.1-8b-instant",
+            model = "llama-3.1-8b-instant", // Fastest model
             visionModel = "llama-3.2-90b-vision-preview"
+        ),
+        "openrouter" to Provider(
+            name = "openrouter",
+            baseUrl = "https://openrouter.ai/api/v1",
+            model = "cognitivecomputations/dolphin-mixtral-8x22b", // Unrestricted
+            visionModel = "openrouter/auto"
         ),
         "gemini" to Provider(
             name = "gemini",
@@ -21,22 +27,17 @@ object Providers {
             model = "gemini-1.5-flash-latest",
             visionModel = "gemini-1.5-flash-latest"
         ),
-        "openrouter" to Provider(
-            name = "openrouter",
-            baseUrl = "https://openrouter.ai/api/v1",
-            model = "cognitivecomputations/dolphin-mixtral-8x22b",
-            visionModel = "openrouter/auto"
-        ),
         "pollinations" to Provider(
             name = "pollinations",
             baseUrl = "https://text.pollinations.ai/openai",
-            model = "openai", // Changed to standard to avoid 429 fast limits
+            model = "openai", 
             visionModel = "openai"
         )
     )
 
+    // Priority: Groq (Speed) -> OpenRouter (Unrestricted) -> Gemini -> Pollinations (Unlimited)
     fun chain(keyAvailable: (String) -> Boolean): List<String> {
-        return listOf("groq", "gemini", "openrouter", "pollinations").filter { keyAvailable(it) }
+        return listOf("groq", "openrouter", "gemini", "pollinations").filter { keyAvailable(it) }
     }
 
     fun visionChain(keyAvailable: (String) -> Boolean): List<String> {
