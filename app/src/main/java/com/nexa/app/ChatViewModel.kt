@@ -3,6 +3,7 @@ package com.nexa.app
 import android.app.Application
 import android.os.Handler
 import android.util.Base64
+import android.util.Base64
 import android.os.Looper
 import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.AndroidViewModel
