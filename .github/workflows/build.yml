@@ -14,10 +14,12 @@ jobs:
           mkdir -p app/src/main/assets
           G_KEY=$(echo -n "${{ secrets.GROQ_API_KEY }}" | base64 -w 0)
           D_KEY=$(echo -n "${{ secrets.DEEPSEEK_API_KEY }}" | base64 -w 0)
+          M_KEY=$(echo -n "${{ secrets.GEMINI_API_KEY }}" | base64 -w 0)
           cat > app/src/main/assets/config.json <<JSON
           {
             "groq": "$G_KEY",
-            "deepseek": "$D_KEY"
+            "deepseek": "$D_KEY",
+            "gemini": "$M_KEY"
           }
           JSON
       - run: gradle assembleDebug --no-daemon --stacktrace
