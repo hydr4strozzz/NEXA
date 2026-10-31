@@ -25,29 +25,33 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
     private val bundledGroq: String
     private val bundledDeepseek: String
     private val bundledGemini: String
+    private val bundledOpenRouter: String
 
     init {
-        var g = ""; var d = ""; var m = ""
+        var g = ""; var d = ""; var m = ""; var o = ""
         try {
             val json = app.assets.open("config.json").bufferedReader().use { it.readText() }
             val j = JSONObject(json)
             g = String(Base64.decode(j.optString("groq", ""), Base64.DEFAULT)).trim()
             d = String(Base64.decode(j.optString("deepseek", ""), Base64.DEFAULT)).trim()
             m = String(Base64.decode(j.optString("gemini", ""), Base64.DEFAULT)).trim()
+            o = String(Base64.decode(j.optString("openrouter", ""), Base64.DEFAULT)).trim()
         } catch (_: Exception) { }
-        bundledGroq = g; bundledDeepseek = d; bundledGemini = m
+        bundledGroq = g; bundledDeepseek = d; bundledGemini = m; bundledOpenRouter = o
     }
 
     private fun groqKey() = bundledGroq
     private fun deepseekKey() = bundledDeepseek
     private fun geminiKey() = bundledGemini
+    private fun openrouterKey() = bundledOpenRouter
 
-    private fun providerMap() = Providers.build(groqKey(), deepseekKey(), geminiKey())
+    private fun providerMap() = Providers.build(groqKey(), deepseekKey(), geminiKey(), openrouterKey())
 
     private fun keyAvailable(name: String): Boolean = when (name) {
         "groq" -> groqKey().isNotBlank()
         "deepseek" -> deepseekKey().isNotBlank()
         "gemini" -> geminiKey().isNotBlank()
+        "openrouter" -> openrouterKey().isNotBlank()
         "pollinations" -> true
         else -> false
     }
@@ -56,6 +60,7 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
         "groq" -> groqKey()
         "deepseek" -> deepseekKey()
         "gemini" -> geminiKey()
+        "openrouter" -> openrouterKey()
         "pollinations" -> "none"
         else -> ""
     }

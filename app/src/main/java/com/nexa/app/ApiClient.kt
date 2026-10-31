@@ -12,8 +12,8 @@ data class WireMessage(val role: String, val text: String, val imageB64: String?
 
 class ApiClient {
     private val client = OkHttpClient.Builder()
-        .connectTimeout(5, TimeUnit.SECONDS) // Fast fail: 5s instead of 15s
-        .readTimeout(0, TimeUnit.SECONDS)
+        .connectTimeout(2, TimeUnit.SECONDS) // Ultra-fast failover
+        .readTimeout(30, TimeUnit.SECONDS)   
         .build()
 
     fun streamChat(
@@ -44,8 +44,8 @@ class ApiClient {
             .put("model", model)
             .put("messages", messages)
             .put("stream", true)
-            .put("temperature", 0.9)
-            .put("max_tokens", 4096)
+            .put("temperature", 0.7) // Slightly lower temp for faster, sharper answers
+            .put("max_tokens", 2048) // Keep it short and fast
 
         val req = Request.Builder()
             .url(baseUrl.trimEnd('/') + "/chat/completions")
