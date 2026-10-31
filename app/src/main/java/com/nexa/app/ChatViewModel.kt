@@ -47,7 +47,9 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
     private fun keyAvailable(name: String): Boolean = when (name) {
         "groq" -> groqKey().isNotBlank()
         "deepseek" -> deepseekKey().isNotBlank()
-        "gemini" -> geminiKey().isNotBlank()
+        "gemini" -> geminiKey()
+        "pollinations" -> "none".isNotBlank()
+        "pollinations" -> true
         else -> false
     }
 
@@ -55,6 +57,7 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
         "groq" -> groqKey()
         "deepseek" -> deepseekKey()
         "gemini" -> geminiKey()
+        "pollinations" -> "none"
         else -> ""
     }
 
@@ -110,7 +113,7 @@ class ChatViewModel(app: Application) : AndroidViewModel(app) {
         val name = chain[pos]
         val p = providerMap()[name] ?: run { tryChain(chain, pos + 1, history, idx); return }
         val apiKey = keyFor(name)
-        if (apiKey.isBlank()) { tryChain(chain, pos + 1, history, idx); return }
+        if (apiKey.isBlank() && name != "pollinations") { tryChain(chain, pos + 1, history, idx); return }
 
         val hasImage = history.lastOrNull()?.imageB64 != null
         val model = if (hasImage && p.visionModel != null) p.visionModel else p.model

@@ -15,25 +15,32 @@ object Providers {
             model = "llama-3.3-70b-versatile",
             visionModel = "llama-3.2-90b-vision-preview"
         ),
-        "deepseek" to Provider(
-            name = "deepseek",
-            baseUrl = "https://api.deepseek.com/v1",
-            model = "deepseek-chat",
-            visionModel = null
-        ),
         "gemini" to Provider(
             name = "gemini",
             baseUrl = "https://generativelanguage.googleapis.com/v1beta/openai/",
             model = "gemini-1.5-flash",
             visionModel = "gemini-1.5-flash"
+        ),
+        "pollinations" to Provider(
+            name = "pollinations",
+            baseUrl = "https://text.pollinations.ai/openai",
+            model = "openai",
+            visionModel = "openai"
+        ),
+        "deepseek" to Provider(
+            name = "deepseek",
+            baseUrl = "https://api.deepseek.com/v1",
+            model = "deepseek-chat",
+            visionModel = null
         )
     )
 
+    // Pollinations always available, DeepSeek last (since paid)
     fun chain(keyAvailable: (String) -> Boolean): List<String> {
-        return listOf("groq", "deepseek", "gemini").filter { keyAvailable(it) }
+        return listOf("groq", "gemini", "pollinations", "deepseek").filter { keyAvailable(it) }
     }
 
     fun visionChain(keyAvailable: (String) -> Boolean): List<String> {
-        return listOf("groq", "gemini").filter { keyAvailable(it) }
+        return listOf("groq", "gemini", "pollinations").filter { keyAvailable(it) }
     }
 }
